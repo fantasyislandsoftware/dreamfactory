@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - type: bind
+        source: /Users/andyjones/Documents/Projects/source/dreams
+        target: /mnt/dreams
+      - ./backend/src:/home/node/app/src
+      - ./backend/nodemon.json:/home/node/app/nodemon.json
+      - ./backend/package.json:/home/node/app/package.json
+    expose:
+      - "8181"
+    ports:
+      - "8181:8181"
+    command: npm run dev
+    #command: tail -f /dev/null

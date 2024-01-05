@@ -1,0 +1,7 @@
+{
+  "name": "dreamfactory",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@types/node": "^20.10.5"
+  }
+}
