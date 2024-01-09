@@ -73,6 +73,22 @@ export function makeQuerablePromise(promise: any) {
   return result;
 }
 
+const log = (output: string, colour: "white" | "blue" | "green" | "red") => {
+  let colour_code = "97";
+  switch (colour) {
+    case "blue":
+      colour_code = "34";
+      break;
+    case "green":
+      colour_code = "32";
+      break;
+    case "red":
+      colour_code = "31";
+      break;
+  }
+  console.log(`\x1b[${colour_code}m${output}\x1b[0m`);
+};
+
 export const build = async () => {
   console.clear();
   const rootPath = getRootPath();
@@ -88,6 +104,7 @@ export const build = async () => {
   const t = setInterval(() => {
     if (processState === ProcessState.stopped) {
       processState = ProcessState.running;
+      log(script[line], "blue");
       const cmdArray = script[line].split(" ");
       const cmd = cmdArray.shift();
       const args = cmdArray.join(" ");
@@ -97,12 +114,17 @@ export const build = async () => {
     if (processState === ProcessState.running) {
       if (process.isFulfilled()) {
         const data = process.getData();
-        console.log(data);
+        log(data.message, data.status === "error" ? "red" : "green");
         processState = ProcessState.stopped;
         line++;
         if (line > script.length - 1 || data.status === "error") {
           processState = ProcessState.stopped;
           clearInterval(t);
+          if (data.status === "error") {
+            log("Build failed!", "red");
+          } else {
+            console.log("Build completed!");
+          }
         }
       }
     }
