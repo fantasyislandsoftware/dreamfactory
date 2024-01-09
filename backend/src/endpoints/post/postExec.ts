@@ -1,19 +1,18 @@
-import { execSync } from "child_process";
-
 const postExec = (app: any) => {
   app.post("/exec", async (req: any, res: any, next: any) => {
+    const execSync = require("child_process").execSync;
     try {
       const { projectFolder, cmd, args } = req.body;
 
-      let cmdString = "";
+      let command = "";
       let message = "";
 
       switch (cmd) {
         case "ls":
-          cmdString = "ls";
+          command = "ls";
           break;
         case "zxbasic_asm":
-          cmdString = "zxbasm.py";
+          command = "zxbasm.py";
           break;
         default:
           message = "Command not found";
@@ -21,7 +20,7 @@ const postExec = (app: any) => {
 
       let status = "success";
       try {
-        message = execSync(cmdString).toString();
+        message = execSync(`${command} ${args}`).toString();
       } catch (error: any) {
         status = "error";
         message = error.message;
