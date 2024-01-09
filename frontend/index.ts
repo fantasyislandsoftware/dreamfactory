@@ -89,44 +89,52 @@ const log = (output: string, colour: "white" | "blue" | "green" | "red") => {
   console.log(`\x1b[${colour_code}m${output}\x1b[0m`);
 };
 
-export const build = async () => {
+export const build = () => {
   console.clear();
   const rootPath = getRootPath();
   const rootPathArray = rootPath.split("/");
   const projectFolder = rootPathArray[rootPathArray.length - 1];
-  const scriptPath = `${rootPath}/build`;
+  const scriptPath = `${rootPath}/dream/task.script`;
   const script = fs.readFileSync(`${scriptPath}`, "utf8").split("\n");
 
-  let processState = ProcessState.stopped;
-  let process: any = null;
+  let taskState = ProcessState.stopped;
+  let task: any = null;
   let line = 0;
 
   const t = setInterval(() => {
-    if (processState === ProcessState.stopped) {
-      processState = ProcessState.running;
+    if (taskState === ProcessState.stopped) {
+      taskState = ProcessState.running;
       log(script[line], "blue");
       const cmdArray = script[line].split(" ");
       const cmd = cmdArray.shift();
       const args = cmdArray.join(" ");
-      process = makeQuerablePromise(exec(projectFolder, cmd, args));
+      task = makeQuerablePromise(exec(projectFolder, cmd, args));
     }
 
-    if (processState === ProcessState.running) {
-      if (process.isFulfilled()) {
-        const data = process.getData();
+    if (taskState === ProcessState.running) {
+      if (task.isFulfilled()) {
+        const data = task.getData();
         log(data.message, data.status === "error" ? "red" : "green");
-        processState = ProcessState.stopped;
+        taskState = ProcessState.stopped;
         line++;
         if (line > script.length - 1 || data.status === "error") {
-          processState = ProcessState.stopped;
+          taskState = ProcessState.stopped;
           clearInterval(t);
           if (data.status === "error") {
             log("Build failed!", "red");
+            process.exit(1);
           } else {
-            console.log("Build completed!");
+            log("Build completed!", "green");
+            run("npx ts-node dream/post.ts");
           }
         }
       }
     }
   });
+};
+
+export const run = (path: string) => {
+  const execSync = require("child_process").execSync;
+  const x = execSync(path);
+  console.log(x.toString());
 };

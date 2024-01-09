@@ -1,6 +1,8 @@
+import { dreamPath } from "../../env";
+
 const postExec = (app: any) => {
   app.post("/exec", async (req: any, res: any, next: any) => {
-    const execSync = require("child_process").execSync;
+    const spawnSync = require("child_process").spawnSync;
     try {
       const { projectFolder, cmd, args } = req.body;
 
@@ -11,6 +13,9 @@ const postExec = (app: any) => {
         case "ls":
           command = "ls";
           break;
+        case "bas2tap":
+          command = "bas2tap";
+          break;
         case "zxbasic_asm":
           command = "zxbasm.py";
           break;
@@ -20,7 +25,17 @@ const postExec = (app: any) => {
 
       let status = "success";
       try {
-        message = execSync(`${command} ${args}`).toString();
+        const process = spawnSync(
+          `cd ${dreamPath}/${projectFolder} && ${command} ${args}`,
+          { shell: true }
+        );
+        if (process.stderr.length > 0) {
+          status = "error";
+          message = process.stderr.toString();
+        } else {
+          status = "success";
+          message = process.stdout.toString();
+        }
       } catch (error: any) {
         status = "error";
         message = error.message;
