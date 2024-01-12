@@ -1,8 +1,8 @@
 import { dreamPath } from "../../env";
+import { spawnSync } from "../../node";
 
 const postExec = (app: any) => {
   app.post("/exec", async (req: any, res: any, next: any) => {
-    const spawnSync = require("child_process").spawnSync;
     try {
       const { projectFolder, cmd, args } = req.body;
 
@@ -18,6 +18,9 @@ const postExec = (app: any) => {
           break;
         case "zxbasic_asm":
           command = "zxbasm.py";
+          break;
+        case "lnbas":
+          command = "npx ts-node /home/node/app/src/command/lnbas.ts";
           break;
         default:
           message = "Command not found";

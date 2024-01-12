@@ -89,22 +89,62 @@ const log = (output: string, colour: "white" | "blue" | "green" | "red") => {
   console.log(`\x1b[${colour_code}m${output}\x1b[0m`);
 };
 
+const getProjectFolder = () => {
+  const pathArray = getRootPath().split("/");
+  let afterDream = false;
+  let result = "";
+  pathArray.forEach((folder, index) => {
+    if (afterDream) {
+      result += folder;
+      if (index < pathArray.length - 1) {
+        result += "/";
+      }
+    }
+    if (folder === "dreams") {
+      afterDream = true;
+    }
+  });
+  return result;
+};
+
 export const build = () => {
   console.clear();
+
+  const projectFolder = getProjectFolder();
   const rootPath = getRootPath();
-  const rootPathArray = rootPath.split("/");
-  const projectFolder = rootPathArray[rootPathArray.length - 1];
+
   const scriptPath = `${rootPath}/dream/task.script`;
-  const script = fs.readFileSync(`${scriptPath}`, "utf8").split("\n");
+  let script = fs.readFileSync(`${scriptPath}`, "utf8").split("\n");
+
+  script = script.filter((line) => {
+    return !line.startsWith("#");
+  });
 
   let taskState = ProcessState.stopped;
   let task: any = null;
   let line = 0;
 
+  const chars = [" ", "⠙", "⠘", "⠰", "⠴", "⠤", "⠦", "⠆", "⠃", "⠋", "⠉"];
+  let x = 0;
+
+  let anim: any = undefined;
+
+  let consoleText = "";
+
   const t = setInterval(() => {
+    if (!anim) {
+      anim = setInterval(() => {
+        x++;
+        if (x >= chars.length) {
+          x = 1;
+        }
+      }, 50);
+    }
+
     if (taskState === ProcessState.stopped) {
       taskState = ProcessState.running;
-      log(script[line], "blue");
+      consoleText = script[line];
+
       const cmdArray = script[line].split(" ");
       const cmd = cmdArray.shift();
       const args = cmdArray.join(" ");
@@ -112,14 +152,17 @@ export const build = () => {
     }
 
     if (taskState === ProcessState.running) {
+      process.stdout.write(`\r\x1b[34m${consoleText} ${chars[x]}\x1b[0m`);
       if (task.isFulfilled()) {
         const data = task.getData();
-        log(data.message, data.status === "error" ? "red" : "green");
+        process.stdout.write(`\r\x1b[34m${consoleText} ${chars[0]}\x1b[0m`);
+        log(`${data.message}`, data.status === "error" ? "red" : "green");
         taskState = ProcessState.stopped;
         line++;
         if (line > script.length - 1 || data.status === "error") {
           taskState = ProcessState.stopped;
           clearInterval(t);
+          clearInterval(anim);
           if (data.status === "error") {
             log("Build failed!", "red");
             process.exit(1);
@@ -135,6 +178,6 @@ export const build = () => {
 
 export const run = (path: string) => {
   const execSync = require("child_process").execSync;
-  const x = execSync(path);
-  console.log(x.toString());
+  const result = execSync(path);
+  console.log(result.toString());
 };
