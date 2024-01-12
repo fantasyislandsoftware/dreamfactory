@@ -179,5 +179,4 @@ export const build = () => {
 export const run = (path: string) => {
   const execSync = require("child_process").execSync;
   const result = execSync(path);
-  console.log(result.toString());
 };

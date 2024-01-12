@@ -1,6 +1,6 @@
+import { diag } from "../../commands";
 import { dreamPath } from "../../env";
 import { spawnSync } from "../../node";
-
 const postExec = (app: any) => {
   app.post("/exec", async (req: any, res: any, next: any) => {
     try {
@@ -8,6 +8,10 @@ const postExec = (app: any) => {
 
       let command = "";
       let message = "";
+      let internal: { message: string; status: string } = {
+        message: "",
+        status: "success",
+      };
 
       switch (cmd) {
         case "ls":
@@ -22,26 +26,34 @@ const postExec = (app: any) => {
         case "lnbas":
           command = "npx ts-node /home/node/app/src/command/lnbas.ts";
           break;
+        case "diag":
+          command = "internal";
+          internal = diag(projectFolder, args);
         default:
           message = "Command not found";
       }
 
       let status = "success";
-      try {
-        const process = spawnSync(
-          `cd ${dreamPath}/${projectFolder} && ${command} ${args}`,
-          { shell: true }
-        );
-        if (process.stderr.length > 0) {
+      if (command === "internal") {
+        message = internal.message;
+        status = internal.status;
+      } else {
+        try {
+          const process = spawnSync(
+            `cd ${dreamPath}/${projectFolder} && ${command} ${args}`,
+            { shell: true }
+          );
+          if (process.stderr.length > 0) {
+            status = "error";
+            message = process.stderr.toString();
+          } else {
+            status = "success";
+            message = process.stdout.toString();
+          }
+        } catch (error: any) {
           status = "error";
-          message = process.stderr.toString();
-        } else {
-          status = "success";
-          message = process.stdout.toString();
+          message = error.message;
         }
-      } catch (error: any) {
-        status = "error";
-        message = error.message;
       }
       res.json({ status: status, message: message });
     } catch (error) {
