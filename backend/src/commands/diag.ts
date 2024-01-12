@@ -1,5 +1,5 @@
-import fs from "fs";
 import { dreamPath } from "../env";
+import { writeFileSync } from "../node";
 
 const diag = (projectFolder: string, args: string) => {
   const path = `${dreamPath}/${projectFolder}/dream/diag.html`;
@@ -10,7 +10,7 @@ const diag = (projectFolder: string, args: string) => {
           <div>Test Diagnostic</div>
         </body>
       `;
-  fs.writeFileSync(path, html);
+  writeFileSync(path, html);
 
   return { message: "", status: "success" };
 };
