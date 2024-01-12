@@ -1,4 +1,5 @@
-import { diag } from "../../commands";
+import diag from "../../commands/diag";
+import lnbas from "../../commands/lnbas";
 import { dreamPath } from "../../env";
 import { spawnSync } from "../../node";
 const postExec = (app: any) => {
@@ -24,7 +25,8 @@ const postExec = (app: any) => {
           command = "zxbasm.py";
           break;
         case "lnbas":
-          command = "npx ts-node /home/node/app/src/command/lnbas.ts";
+          command = "internal";
+          internal = lnbas(projectFolder, args);
           break;
         case "diag":
           command = "internal";
