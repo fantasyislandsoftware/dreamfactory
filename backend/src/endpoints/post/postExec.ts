@@ -1,3 +1,4 @@
+import compileTap from "../../commands/compileTap";
 import diag from "../../commands/diag";
 import lnbas from "../../commands/lnbas";
 import { dreamPath } from "../../env";
@@ -31,6 +32,11 @@ const postExec = (app: any) => {
         case "diag":
           command = "internal";
           internal = diag(projectFolder, args);
+          break;
+        case "compileTap":
+          command = "internal";
+          internal = compileTap(projectFolder, args);
+          break;
         default:
           message = "Command not found";
       }

@@ -14,8 +14,6 @@ const lnbas = (projectFolder: string, args: string) => {
     return { message: message, status: "error" };
   }
 
-  message = iPath;
-
   const code = readFileSync(iPath, "utf8").split("\n");
   let numberedCode: string[] = [];
   let lineNumber = 1;
