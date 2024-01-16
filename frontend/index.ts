@@ -113,12 +113,54 @@ export const build = () => {
   const projectFolder = getProjectFolder();
   const rootPath = getRootPath();
 
-  const scriptPath = `${rootPath}/dream/task.script`;
-  let script = fs.readFileSync(`${scriptPath}`, "utf8").split("\n");
+  const project = JSON.parse(
+    fs.readFileSync(`${rootPath}/dream/project.json`, "utf8")
+  );
+  const projectName = project?.name ? project.name : "default";
+  const buildName = project?.build?.name ? project.build.name : "default";
+  const sourceName = project?.source?.name ? project.source.name : "default";
 
-  script = script.filter((line) => {
+  const scriptPath = `${rootPath}/dream/task.script`;
+  let scriptFile = fs.readFileSync(`${scriptPath}`, "utf8");
+  scriptFile = scriptFile.replace(/{build_name}/g, buildName);
+  scriptFile = scriptFile.replace(/{source_name}/g, sourceName);
+
+  let fullScript = scriptFile.split("\n");
+  fullScript = fullScript.filter((line) => {
     return !line.startsWith("#");
   });
+  fullScript = fullScript.filter((line) => {
+    return line.length > 0;
+  });
+
+  let scriptMode = "";
+  let buildScript: string[] = [];
+  let runScript: string[] = [];
+  fullScript.forEach((line) => {
+    if (line === "[build]") {
+      scriptMode = "build";
+    }
+    if (line === "[run]") {
+      scriptMode = "run";
+    }
+    if (scriptMode === "build") {
+      buildScript.push(line);
+    }
+    if (scriptMode === "run") {
+      runScript.push(line);
+    }
+  });
+
+  buildScript = buildScript.filter((line) => {
+    return !line.startsWith("[build]");
+  });
+
+  runScript = runScript.filter((line) => {
+    return !line.startsWith("[run]");
+  });
+
+  console.log(buildScript);
+  console.log(runScript);
 
   let taskState = ProcessState.stopped;
   let task: any = null;
@@ -143,9 +185,9 @@ export const build = () => {
 
     if (taskState === ProcessState.stopped) {
       taskState = ProcessState.running;
-      consoleText = script[line];
+      consoleText = buildScript[line];
 
-      const cmdArray = script[line].split(" ");
+      const cmdArray = buildScript[line].split(" ");
       const cmd = cmdArray.shift();
       const args = cmdArray.join(" ");
       task = makeQuerablePromise(exec(projectFolder, cmd, args));
@@ -159,7 +201,7 @@ export const build = () => {
         log(`${data.message}`, data.status === "error" ? "red" : "green");
         taskState = ProcessState.stopped;
         line++;
-        if (line > script.length - 1 || data.status === "error") {
+        if (line > buildScript.length - 1 || data.status === "error") {
           taskState = ProcessState.stopped;
           clearInterval(t);
           clearInterval(anim);
@@ -168,7 +210,9 @@ export const build = () => {
             process.exit(1);
           } else {
             log("Build completed!", "green");
-            run("npx ts-node dream/post.ts");
+            runScript.forEach((line) => {
+              run(line);
+            });
           }
         }
       }
