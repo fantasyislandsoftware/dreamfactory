@@ -117,11 +117,13 @@ export const build = () => {
     fs.readFileSync(`${rootPath}/dream/project.json`, "utf8")
   );
   const projectName = project?.name ? project.name : "default";
+  const target = project?.target ? project.target : "default";
   const buildName = project?.build?.name ? project.build.name : "default";
   const sourceName = project?.source?.name ? project.source.name : "default";
 
   const scriptPath = `${rootPath}/dream/task.script`;
   let scriptFile = fs.readFileSync(`${scriptPath}`, "utf8");
+  scriptFile = scriptFile.replace(/{target}/g, target);
   scriptFile = scriptFile.replace(/{build_name}/g, buildName);
   scriptFile = scriptFile.replace(/{source_name}/g, sourceName);
 
@@ -159,8 +161,16 @@ export const build = () => {
     return !line.startsWith("[run]");
   });
 
-  console.log(buildScript);
-  console.log(runScript);
+  const execRunScript = () => {
+    runScript.forEach((line) => {
+      run(line);
+    });
+  };
+
+  if (buildScript.length === 0) {
+    execRunScript();
+    process.exit(1);
+  }
 
   let taskState = ProcessState.stopped;
   let task: any = null;
@@ -210,9 +220,7 @@ export const build = () => {
             process.exit(1);
           } else {
             log("Build completed!", "green");
-            runScript.forEach((line) => {
-              run(line);
-            });
+            execRunScript();
           }
         }
       }
