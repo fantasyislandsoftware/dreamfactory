@@ -1,8 +1,10 @@
 import compileTap from "../../commands/compileTap";
 import diag from "../../commands/diag";
+import js2amos from "../../commands/js2amos";
 import lnbas from "../../commands/lnbas";
 import { dreamPath } from "../../env";
 import { spawnSync } from "../../node";
+
 const postExec = (app: any) => {
   app.post("/exec", async (req: any, res: any, next: any) => {
     try {
@@ -36,6 +38,10 @@ const postExec = (app: any) => {
         case "compileTap":
           command = "internal";
           internal = compileTap(projectFolder, args);
+          break;
+        case "js2amos":
+          command = "internal";
+          internal = js2amos(projectFolder, args);
           break;
         default:
           message = "Command not found";
