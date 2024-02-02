@@ -1,5 +1,4 @@
 import fs from "fs";
-import AMOS from "./classes/AMOS";
 
 enum ProcessState {
   stopped = 0,
@@ -233,5 +232,3 @@ export const run = (path: string) => {
   const execSync = require("child_process").execSync;
   const result = execSync(path);
 };
-
-export const amos = new AMOS();
