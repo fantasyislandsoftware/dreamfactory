@@ -1,6 +1,6 @@
 import compileTap from "../../commands/compileTap";
 import diag from "../../commands/diag";
-import js2amos from "../../commands/js2amos";
+import concatBasic from "../../commands/concatBasic";
 import lnbas from "../../commands/lnbas";
 import { dreamPath } from "../../env";
 import { spawnSync } from "../../node";
@@ -39,9 +39,9 @@ const postExec = (app: any) => {
           command = "internal";
           internal = compileTap(projectFolder, args);
           break;
-        case "js2amos":
+        case "concatBasic":
           command = "internal";
-          internal = js2amos(projectFolder, args);
+          internal = concatBasic(projectFolder, args);
           break;
         default:
           message = "Command not found";
