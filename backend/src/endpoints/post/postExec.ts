@@ -27,9 +27,15 @@ const postExec = (app: any) => {
         case "zxbasic_asm":
           command = "zxbasm.py";
           break;
+        case "zxbasic_bas":
+          command = "zxbc.py";
+          break;
         case "lnbas":
           command = "internal";
           internal = lnbas(projectFolder, args);
+          break;
+        case "vda68k":
+          command = "vda68k";
           break;
         case "diag":
           command = "internal";

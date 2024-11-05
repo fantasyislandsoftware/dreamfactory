@@ -23,8 +23,16 @@ RUN git clone https://github.com/andybalaam/bas2tap.git
 WORKDIR ${COMPILERS_PATH}/bas2tap
 RUN make
 
+# vda
+WORKDIR ${COMPILERS_PATH}
+RUN wget -q "http://sun.hasenbraten.de/~frank/projects/download/vdam68k.tar.gz"
+RUN tar xvzf vdam68k.tar.gz
+WORKDIR ${COMPILERS_PATH}/vda/M68k
+RUN make
+
 ENV PATH="${COMPILERS_PATH}/zxbasic:$PATH"
 ENV PATH="${COMPILERS_PATH}/bas2tap:$PATH"
+ENV PATH="${COMPILERS_PATH}/vda/M68k:$PATH"
 
 # Setup node
 WORKDIR /home/node/app

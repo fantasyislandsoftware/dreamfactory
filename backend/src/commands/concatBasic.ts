@@ -39,7 +39,7 @@ const concatBasic = (projectFolder: string, args: string) => {
   const main = readFileSync(`${sPath}/${sName}`, "utf8").replace(
     "${includes}",
     includes
-  );
+  ).replace(/rem/gi,';');
 
   //dest += `\n\n${main}`;
   writeFileSync(oPath, main);
